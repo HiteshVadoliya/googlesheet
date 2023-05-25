@@ -1,0 +1,223 @@
+const header = document.querySelector("header");
+
+const first_skill = document.querySelector(".skill:first-child");
+const sk_counter = document.querySelectorAll(".counter span");
+const progress_bar = document.querySelectorAll(".skill svg circle");
+
+const ml_section = document.querySelector(".milestones");
+const ml_counter = document.querySelectorAll(".number span");
+
+const prt_section = document.querySelector(".portfolio");
+const zoom_icons = document.querySelectorAll(".zoom-icon");
+const model_overlay = document.querySelector(".modal-overlay");
+
+const imges = document.querySelectorAll(".images img");
+
+const prev_btn = document.querySelector(".prev-btn");
+const next_btn = document.querySelector(".next-btn");
+
+const links = document.querySelectorAll(".nav-link");
+
+const toggel_btn = document.querySelector(".toggle-btn");
+
+const hamburger = document.querySelector(".hamburger");
+
+
+window.addEventListener("scroll",() => {
+    activeLink();
+    if(!skillsPlayed)skillsCounter();
+    if(!mlplayed)mlCounter();
+});
+
+
+function stickyNavbar(){
+    header.classList.toggle("scrolled" , window.pageYOffset > 0);
+}
+stickyNavbar();
+
+window.addEventListener("scroll", stickyNavbar);
+
+/*-----------------------Reveal Animations----------------*/
+
+let sr = ScrollReveal({
+    duration: 2500,
+    distance:"60px",
+});
+
+sr.reveal(".showcase-info",{delay: 200});
+sr.reveal(".showcase-img",{ origin:"top",delay: 500});
+
+
+/*------------Progress Bar-------------------*/
+
+function hasReached(el){
+
+    let topPosition = el.getBoundingClientRect().top;
+
+    if(window.innerHeight >= topPosition + el.offsetHeight) return true;
+    return false;
+}
+
+function updateCount(num, maxNum){
+    let currentNum = +num.innerText;
+
+    if(currentNum < maxNum){
+        num.innerText = currentNum + 1;
+        setTimeout(() => {
+            updateCount(num, maxNum);
+        }, 20);
+    }
+}
+
+let skillsPlayed = false;
+
+function skillsCounter(){
+    if(!hasReached(first_skill))return;
+
+    skillsPlayed = true;
+
+
+
+    sk_counter.forEach((counter, i) => {
+        let target = +counter.dataset.target;
+        let strokeValue = 427 - 427 * (target/100);
+
+        progress_bar[i].style.setProperty("--target", strokeValue);
+
+        setTimeout(() => {
+            updateCount(counter, target);
+        }, 400);
+    });
+
+    progress_bar.forEach(p => p.style.animation = "progress 2s ease-in-out forwards")
+}
+
+/*------------------------------Service Animations--------------------------*/
+let mlplayed = false;
+function mlCounter(){
+    if(!hasReached(ml_section))return;
+    mlplayed = true;
+    ml_counter.forEach((ctr) => {
+        let target = +ctr.dataset.target;
+        
+        setTimeout(()=>{
+            updateCount(ctr,target);
+        }, 400)
+    })
+}
+/*------------------------------Service Animations--------------------------*/
+
+let mixer = mixitup(".portfolio-gallery",{
+    selectors: {
+        target: '.prt-card'
+    },
+    animation: {
+        duration: 500,
+    },
+});
+
+/*------------------------------popup gallery Animations--------------------------*/
+
+let currentIndex = 0;
+
+zoom_icons.forEach((icn, i) => 
+icn.addEventListener("click", () =>{
+    prt_section.classList.add("open");
+    document.body.classList.add("stopScrolling");
+    currentIndex = i;
+    chageImg(currentIndex);
+ })
+);
+
+model_overlay.addEventListener("click", () => {
+    prt_section.classList.remove("open")
+    document.body.classList.remove  ("stopScrolling");
+});
+
+prev_btn.addEventListener("click", ()=>{
+    if(currentIndex === 0){
+        currentIndex = 5;
+    }else{
+        currentIndex--;
+    }
+    chageImg(currentIndex);
+});
+
+next_btn.addEventListener("click", ()=>{
+    if(currentIndex === 5){
+        currentIndex = 0;
+    }else{
+        currentIndex++;
+    }
+    chageImg(currentIndex);
+});
+
+function chageImg(index){
+    imges.forEach((img) => img.classList.remove("showImges"));
+    imges[index].classList.add("showImges")
+}
+
+/*------------------------------Testimonial section--------------------------*/
+
+const swiper = new Swiper('.swiper', {
+    loop: true,
+    speed: 500,
+    autoplay: true,
+    // If we need pagination
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+  });
+
+/*-----------------------Navlink Activation--------------------------*/
+
+function activeLink(){
+    let sections = document.querySelectorAll("section[id]");
+    let passedSections = Array.from(sections).map((sct,i) => {
+        return{
+            y:sct.getBoundingClientRect().top - header.offsetHeight,
+            id: i,
+        };
+    })
+    .filter((sct) => sct.y <= 0);
+
+    let currSectionID = passedSections.at(-1).id;
+
+    links.forEach(l => l.classList.remove("active"));
+    links[currSectionID].classList.add("active");
+}
+activeLink();
+
+/*----------------------------Dark-animations-----------------------*/
+let firstTheme = localStorage.getItem("dark");
+
+chageTheme(+firstTheme);
+
+
+function chageTheme(isdark){
+    if(isdark){
+        document.body.classList.add("dark");
+        toggel_btn.classList.replace("fa-moon", "fa-sun");
+        localStorage.setItem("dark", 1);
+    }else{
+        document.body.classList.remove("dark");
+        toggel_btn.classList.replace("fa-sun", "fa-moon");
+        localStorage.setItem("dark", 0);
+    }
+}
+toggel_btn.addEventListener("click", () => {
+    chageTheme(!document.body.classList.contains("dark"));
+});
+
+/*----------Hamburger Menu------------------------------*/
+
+hamburger.addEventListener("click", ()=> {
+    document.body.classList.toggle("open");
+    document.body.classList.toggle("stopScrolling");
+});
+
+links.forEach(link => link.addEventListener("click",()=>{
+    document.body.classList.remove("open");
+    document.body.classList.remove("stopScrolling");
+}))
